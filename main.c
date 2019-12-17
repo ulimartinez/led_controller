@@ -150,7 +150,7 @@ void matrix_clear(void)
 
 void msg_to_matrix(char* message){
 	//translating goes here
-	printf("message length is %d\n", strlen(message));
+	printf("%s, message length is %d\n", strlen(message), message);
 	for(int i = 0; i+3 < strlen(message); i+=4){
 		matrix[copy_index] = (ws2811_led_t)message[i] << 24 |
 					(ws2811_led_t)message[i+1] << 16 |
@@ -161,6 +161,7 @@ void msg_to_matrix(char* message){
 		if(copy_index == led_count-1){
 			copy_index = 0;
 			matrix_render();
+			ws2811_render(&ledstring);
 		}
 	}
 }
