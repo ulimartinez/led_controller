@@ -75,7 +75,6 @@ int main(int argc, char const *argv[])
 	int opt = 1; 
 	int addrlen = sizeof(address); 
 	char buffer[4096] = {0}; 
-	char *hello = "Hello from server"; 
 	
 	// Creating socket file descriptor 
 	if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0) 
@@ -121,12 +120,19 @@ int main(int argc, char const *argv[])
 
 		while(running){
 			valread = read( new_socket , buffer, sizeof(buffer)); 
-			if(strstr(buffer, "close") != NULL){
+			if(valread>0){
+				if(strstr(buffer, "close") != NULL){
+					close(new_socket);
+					running = 0;
+					break;
+				}
+				msg_to_matrix(buffer, valread);
+			}
+			else if(valread == 0){
 				close(new_socket);
 				running = 0;
 				break;
 			}
-			msg_to_matrix(buffer);
 			//translate the value read into the matrix
 			//render the matrix
 			//sleep
@@ -148,18 +154,14 @@ void matrix_clear(void)
     }
 }
 
-void msg_to_matrix(char* message){
-	//translating goes here
-	printf("%s, message length is %d\n", strlen(message), message);
-	for(int i = 0; i+3 < strlen(message); i+=4){
-		matrix[copy_index] = (ws2811_led_t)message[i] << 24 |
-					(ws2811_led_t)message[i+1] << 16 |
-					(ws2811_led_t)message[i+2] << 8 |
-					(ws2811_led_t)message[i+3];
+void msg_to_matrix(char* message, int valread){
+	uint32_t *p=(uint32_p*)message;
+	size_t len = valread / sizeof(uint32_t);
+	for(int i = 0; i < len; i++){
+		matrix[copy_index] = p[i];
 		copy_index++;
-		printf("matrix is at %d capacity\n", copy_index);
 		if(copy_index == led_count-1){
-			copy_index = 0;
+			copy_index=0;
 			matrix_render();
 			ws2811_render(&ledstring);
 		}
