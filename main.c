@@ -155,16 +155,19 @@ void matrix_clear(void)
 }
 
 void msg_to_matrix(char* message, int valread){
-	uint32_t *p=(uint32_p*)message;
+	uint32_t *p=(uint32_t*)message;
 	size_t len = valread / sizeof(uint32_t);
+	printf("got %d ints", len);
 	for(int i = 0; i < len; i++){
 		matrix[copy_index] = p[i];
-		copy_index++;
 		if(copy_index == led_count-1){
-			copy_index=0;
+			copy_index=-1;
 			matrix_render();
 			ws2811_render(&ledstring);
+			matrix_clear();
 		}
+		copy_index++;
+		printf("matrix is at %d capacity\n", copy_index);
 	}
 }
 
