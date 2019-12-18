@@ -1,3 +1,4 @@
+#!/usr/bin/python
 from PIL import Image, ImageDraw, ImageFont
 import math
 from datetime import datetime
@@ -6,7 +7,7 @@ import socket
 def main():
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     port = 8080
-    s.connect(('192.168.2.4', port))
+    s.connect(('localhost', port))
     
     while True:
         now = datetime.now()
@@ -53,23 +54,20 @@ def seconds_to_frame(seconds, draw):
     off = 0
     if seconds < 7:
         off = math.floor(seconds *(0.7))+start_x
-        print(off, seconds)
         draw.line(((start_x, start_y), (off, start_y)), fill='rgb(0,0,255)', width=1)
-    elif seconds < 24:
-        off=math.floor((seconds-7) *(0.7))
-        print(off)
+    elif seconds < 23:
+        off=math.floor((seconds-7) *(0.6))
         draw.line(((start_x, start_y), 
                 (19, 0),
                 (19,off)), fill='rgb(0,0,255)', width=1)
     elif seconds < 37:
         off=19-math.floor((seconds-24) *(0.7))
-        print(off)
         draw.line(((start_x, start_y), 
                 (19, 0),
                 (19,24),
                 (off,24)), fill='rgb(0,0,255)', width=1)
-    elif seconds < 54:
-        off = 24-math.floor((seconds-37) *(0.7))
+    elif seconds < 53:
+        off = 24-math.floor((seconds-37) *(0.6))
         draw.line(((start_x, start_y), 
                 (19, 0),
                 (19,24),
