@@ -53,34 +53,34 @@ def seconds_to_frame(seconds, draw):
     start_y = 0
     off = 0
     if seconds < 7:
-        off = math.floor(seconds *(0.7))+start_x
+        off = math.floor(seconds *(1.4))+start_x
         draw.line(((start_x, start_y), (off, start_y)), fill='rgb(0,0,255)', width=1)
     elif seconds < 23:
-        off=math.floor((seconds-7) *(0.6))
+        off=math.floor((seconds-7) *(1.56))
         draw.line(((start_x, start_y), 
                 (19, 0),
                 (19,off)), fill='rgb(0,0,255)', width=1)
     elif seconds < 37:
-        off=19-math.floor((seconds-24) *(0.7))
+        off=19-math.floor((seconds-24) *(1.4))
         draw.line(((start_x, start_y), 
                 (19, 0),
                 (19,24),
                 (off,24)), fill='rgb(0,0,255)', width=1)
     elif seconds < 53:
-        off = 24-math.floor((seconds-37) *(0.6))
+        off = 24-math.floor((seconds-37) *(1.56))
         draw.line(((start_x, start_y), 
                 (19, 0),
                 (19,24),
                 (0,24),
                 (0,off)), fill='rgb(0,0,255)', width=1)
     else:
-        off = math.floor((seconds-54) *(0.7))
+        off = math.floor((seconds-53) *(1.4))
         draw.line(((start_x, start_y), 
                 (19, 0),
                 (19,24),
                 (0,24),
                 (0,0),
-                (0,off)), fill='rgb(0,0,255)', width=1)
+                (off,0)), fill='rgb(0,0,255)', width=1)
 
            
 
