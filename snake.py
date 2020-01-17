@@ -1,4 +1,5 @@
 import .game
+from .colors import colors
 import random
 class Snake(Game):
     def __init__(self, w, h):
@@ -65,12 +66,18 @@ class Snake(Game):
         else:
             self.snake_len+= 1
 
-    def play(self):
-        while self.playing:
+    def on_tick(self):
             self.clear_board()
             self.move_snake()
             self.place_snake()
             self.place_food()
 
+    def on_keypress(self, data):
+        if data in 'lrud':
+            self.dir = data
+
     def draw_board(self):
-        bytes_array = PixelUtils.board_to_bytes(self.board)
+        board_state = [[color.white if x > 0 for x in row] for row in self.board]
+        bytes_array = PixelUtils.board_to_bytes(board_state)
+        return bytes_array
+

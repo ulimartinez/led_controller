@@ -20,6 +20,9 @@ class Event():
     def get_handler_count(self):
         return len(self.handlers)
 
+    def clear_handlers(self):
+        self.handlers = set()
+
     __iadd__ = handle
     __isub__ = unhandle
     __call__ = fire

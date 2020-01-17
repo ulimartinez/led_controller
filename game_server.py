@@ -1,11 +1,13 @@
 import socket
 import thread
-import .event
+from .event import Event
 class GameServer:
     def __init__(self, host, port):
         self.s = socket.socket()
         self.host = host
         self.port = port
+        self.eventwatcher = Event()
+        self.game = None
 
     def start(self):
         self.s.bind((self.host, self.port))
@@ -19,3 +21,21 @@ class GameServer:
         while True:
             msg = client_sock.recv(1024)
             # do stuff with client messages
+            if self.game is None:
+                if 'snake' in msg:
+                    self.game = Snake(20, 25)
+            else:
+                # fire all of the events
+                self.eventwatcher += self.game.on_tick
+                if 'left' in msg:
+                    self.eventwatcher += self.game.on_left
+                elif 'right' in msg:
+                    self.eventwatcher += self.game.on_right
+                elif 'up' in msg:
+                    self.eventwatcher += self.game.on_up
+                elif 'down' in msg:
+                    self.eventwatcher += self.game.on_down
+
+                self.eventwatcher()
+                game_bytes = self.game.drawboard()
+                self.eventwatcher.clear_handlers()
