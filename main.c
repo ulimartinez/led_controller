@@ -70,11 +70,17 @@ void matrix_render(void)
 int main(int argc, char const *argv[]) 
 { 
 	//setup socket for communication
-	int server_fd, new_socket, valread; 
+	int server_fd, new_socket, valread, client_socket[30],
+		max_clients = 30, activity, i, sd, addrlen; 
+	int max_sd;
 	struct sockaddr_in address; 
 	int opt = 1; 
-	int addrlen = sizeof(address); 
 	char buffer[4096] = {0}; 
+	fd_set readfds;
+
+	for(i=o; i< max_clients; i++){
+		client_socket[i] = 0;
+	}
 	
 	// Creating socket file descriptor 
 	if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0) 
@@ -104,11 +110,8 @@ int main(int argc, char const *argv[])
 		perror("listen"); 
 		exit(EXIT_FAILURE); 
 	} 
-	if ((new_socket = accept(server_fd, (struct sockaddr *)&address, 
-					(socklen_t*)&addrlen))<0) { 
-		perror("accept"); 
-		exit(EXIT_FAILURE); 
-	} 
+
+	addrlen = sizeof(address);
 	//setup matrix information
 	int running = 1;
 	int ret=ws2811_init(&ledstring);
@@ -119,23 +122,54 @@ int main(int argc, char const *argv[])
 	else{
 
 		while(running){
-			valread = read( new_socket , buffer, sizeof(buffer)); 
-			if(valread>0){
-				if(strstr(buffer, "close") != NULL){
-					close(new_socket);
-					running = 0;
-					break;
+			FD_ZERO(&readfds);
+			FD_SET(server_fd, &readfds);
+			imax_sd = server_fd;
+			for(i=0; i<max_clients; i++){
+				sd = client_socket[i];
+				if(sd>0)
+					FD_SET(sd, &readfds);
+				if(sd > max_sd)
+					max_sd = sd;
+			}
+			activity = select(max_sd+1, &readfds, NULL, NULL, NULL);
+
+			if((activity < 0) && (errno!=EINTR)){
+				printf("select errror");
+			}
+
+			if(FD_ISSET(server_fd, &readfds)){
+					if((new_socket = accept(server_fd,
+									(struct sockaddr *)&address,
+									socklen_t*)&addrlen))<0){
+						perror("accept");
+						exit(EXIT_FAILURE);
+					}
+
+					for(i=0; i<max_clients; i++){
+						if(client_socket[i] == 0){
+							client_socket[i] = new_socket;
+							break;
+						}
+					}
+			}	
+			for(i=0; i < max_clients; i++){
+				sd = client_socket[i];
+				if(FD_ISSET(sd, &readfds)){
+					if((valread=read(sd, buffer, sizeof(buffer)))==0){
+						//got dissconect
+						close(sd);
+						client_socket[i] = 0;
+					} else{
+
+						if(strstr(buffer, "close") != NULL){
+							close(sd);
+							client_socket[i] = 0;
+						}
+						msg_to_matrix(buffer, valread);
+					}
 				}
-				msg_to_matrix(buffer, valread);
 			}
-			else if(valread == 0){
-				close(new_socket);
-				running = 0;
-				break;
-			}
-			//translate the value read into the matrix
-			//render the matrix
-			//sleep
 		}
 	}
 	
