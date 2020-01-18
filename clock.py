@@ -6,10 +6,10 @@ class Clock:
         self.now = datetime.now()
 
     def getImage(self):
-        now = self.datetime.now()
-        hour = now.strftime('%H')
-        minu = now.strftime('%M')
-        sec = now.strftime('%S')
+        self.now = datetime.now()
+        hour = self.now.strftime('%H')
+        minu = self.now.strftime('%M')
+        sec = self.now.strftime('%S')
         img = Image.new('RGB', (20, 25), color = 'red')
         draw = ImageDraw.Draw(img)
         font = ImageFont.truetype('/home/ulimartinez/.fonts/Roboto-Bold.ttf', size = 12)
