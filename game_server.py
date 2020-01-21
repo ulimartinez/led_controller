@@ -2,15 +2,19 @@ import socket
 import thread
 from .event import Event
 class GameServer:
-    def __init__(self, host, port):
+    def __init__(self, server_host, server_port, client_host, client_port):
         self.s = socket.socket()
-        self.host = host
-        self.port = port
+        self.s_host = server_host
+        self.s_port = server_port
+        self.c_host = client_host
+        self.c_port = client_port
+        self.c = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.eventwatcher = Event()
         self.game = None
 
     def start(self):
-        self.s.bind((self.host, self.port))
+        self.s.bind((self.s_host, self.s_port))
+        self.c.connect((self.c_host, self.c_port))
         self.s.listen(5)
         while True:
             c, addr = s.accept()
@@ -38,4 +42,12 @@ class GameServer:
 
                 self.eventwatcher()
                 game_bytes = self.game.drawboard()
+                self.c.sendall(game_bytes)
                 self.eventwatcher.clear_handlers()
+
+
+def main():
+    server = GameServer('localhost', 8081, 'localhost', 8080)
+
+if __name__ == '__main__':
+    main()
