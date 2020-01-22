@@ -16,7 +16,7 @@ class GameServer:
         self.game = None
 
     def start(self):
-        self.s.bind((self.s_host, self.s_port))
+        self.s.bind(('', self.s_port))
         self.c.connect((self.c_host, self.c_port))
         self.s.listen(5)
         while True:
