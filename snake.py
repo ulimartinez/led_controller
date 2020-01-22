@@ -1,9 +1,10 @@
-import .game
-from .colors import colors
+from game import Game
+from pixelutils import PixelUtils
+from colors import color
 import random
 class Snake(Game):
     def __init__(self, w, h):
-        super().__init__(w, h)
+        super(Snake, self).__init__(w, h)
         self.snake = [(1,1)]
         self.snake_len = 1
         self.dir = 'r'
@@ -13,17 +14,19 @@ class Snake(Game):
         self.place_food()
         
     def isValid(self, tup):
+        return True
         x, y = tup
+        print(x, y)
         return self.board[y][x] == 0
 
     def generate_food(self):
-        r1 = random.randint(0, len(board))
-        r2 = random.randint(0, len(board[0]))
-        while !isValid((r2, r1)):
-            r1 = random.randint(0, len(board))
-            r2 = random.randint(0, len(board[0]))
+        r1 = random.randint(0, self.w-1)
+        r2 = random.randint(0, self.h-1)
+        while not self.isValid((r1, r2)):
+            r1 = random.randint(0, self.w-1)
+            r2 = random.randint(0, self.h-1)
 
-        return (r2, r1)
+        return (r1, r2)
 
     def place_snake(self):
         for tup in self.snake:
@@ -52,7 +55,7 @@ class Snake(Game):
             if head_y == 0:
                 self.playing = False
                 return
-            next_y = head_y + 1
+            next_y = head_y - 1
         elif self.dir == 'd':
             if head_y == len(self.board)-1:
                 self.playing = False
@@ -61,23 +64,37 @@ class Snake(Game):
 
         self.snake.append((next_x, next_y))
 
-        if board[next_y][next_x] != 3:
+        if self.board[next_y][next_x] != 3:
             self.snake.pop(0)
         else:
             self.snake_len+= 1
+            self.food = self.generate_food()
+
 
     def on_tick(self):
-            self.clear_board()
-            self.move_snake()
-            self.place_snake()
-            self.place_food()
+        print("on tick was called")
+        self.clear_board()
+        self.place_food()
+        self.place_snake()
+        self.move_snake()
 
-    def on_keypress(self, data):
-        if data in 'lrud':
-            self.dir = data
+
+    def on_left(self):
+        self.dir = 'l'
+    def on_right(self):
+        self.dir = 'r'
+    def on_up(self):
+        self.dir = 'u'
+    def on_down(self):
+        self.dir = 'd'
 
     def draw_board(self):
-        board_state = [[color.white if x > 0 for x in row] for row in self.board]
+        board_state = [[color['white'] if x>0 else color['black'] for x in row] for row in self.board]
+        for row in self.board:
+            for val in row:
+
+                print(val),
+            print("\n")
         bytes_array = PixelUtils.board_to_bytes(board_state)
         return bytes_array
 

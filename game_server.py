@@ -1,6 +1,9 @@
+#!/usr/bin/python
 import socket
 import thread
-from .event import Event
+from snake import Snake
+from event import Event
+import time
 class GameServer:
     def __init__(self, server_host, server_port, client_host, client_port):
         self.s = socket.socket()
@@ -17,20 +20,33 @@ class GameServer:
         self.c.connect((self.c_host, self.c_port))
         self.s.listen(5)
         while True:
-            c, addr = s.accept()
+            c, addr = self.s.accept()
+            c.setblocking(0)
             thread.start_new_thread(self.on_new_client, (c,addr))
         self.s.close()
 
     def on_new_client(self, client_sock, addr):
-        while True:
-            msg = client_sock.recv(1024)
+        print('got a new client lol')
+        msg = "lNone"
+        ticks = 0
+        while self.is_playing():
+            try:
+                msg = client_sock.recv(1024)
+            except socket.error:
+                pass
             # do stuff with client messages
             if self.game is None:
+                print("cake")
                 if 'snake' in msg:
+                    print("whats")
                     self.game = Snake(20, 25)
+                    print("sacalo   ")
             else:
                 # fire all of the events
-                self.eventwatcher += self.game.on_tick
+                print("Hello my loved")
+                if ticks >= 5:
+                    self.eventwatcher += self.game.on_tick
+                    ticks = 0
                 if 'left' in msg:
                     self.eventwatcher += self.game.on_left
                 elif 'right' in msg:
@@ -40,14 +56,30 @@ class GameServer:
                 elif 'down' in msg:
                     self.eventwatcher += self.game.on_down
 
+                print("going to call the fire lol")
                 self.eventwatcher()
-                game_bytes = self.game.drawboard()
+                game_bytes = self.game.draw_board()
+                print(''.join(format(x, '02X') for x in game_bytes))
                 self.c.sendall(game_bytes)
                 self.eventwatcher.clear_handlers()
+            ticks +=1
+            time.sleep(0.1)
+        print("game over")
+        self.close_conn()
 
+    def is_playing(self):
+        if self.game is None:
+            return True
+        else:
+            return self.game.playing
+
+    def close_conn(self):
+        self.c.close()
 
 def main():
-    server = GameServer('localhost', 8081, 'localhost', 8080)
+    server = GameServer('localhost', 3400, 'localhost', 8080)
+    print("going to start the game server")
+    server.start()
 
 if __name__ == '__main__':
     main()
