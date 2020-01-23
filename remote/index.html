@@ -17,47 +17,58 @@
     </div>
 </div>
 <script src="./virtualjoystick.js"></script>
+<script src="/socket.io/socket.io.js"></script>
 <script>
-    let url = "192.168.2.6";
+    var socket = io();
+    let url = "ws://wall.ulimartech.com:3400/ws/";
     let webSocket = new WebSocket(url);
+    webSocket.onopen = function(event){
+	    service.send("snake");
+    }
+    webSocket.onerror = function(event){
+	    alert("error");
+    }
+    webSocket.onclose = function(event){
+	    alert("closed");
+    }
 
 
 
     let joystick	= new VirtualJoystick({
-        container	: document.getElementById('container'),
-        mouseSupport	: true,
+	container	: document.getElementById('container'),
+	mouseSupport	: true,
     });
     let aPressed = false;
     let bPressed = false;
     joystick.addEventListener('touchStart', function(){
-        console.log('down')
+	console.log('down')
     });
     joystick.addEventListener('touchEnd', function(){
-        console.log('up')
+	console.log('up')
     });
 
     setInterval(function(){
-        let press = '';
-        if(joystick.right())
-            press = 'right';
-        if (joystick.up())
-            press += ' up';
-        if (joystick.left())
-            press += ' left';
-        if (joystick.down())
-            press += ' down';
-        
-        if(aPress()){
-            press += ' a';
-        }
-        if(bPress()){
-            press +=' b';
-        }
+	let press = '';
+	if(joystick.right())
+	    press = 'right';
+	if (joystick.up())
+	    press += ' up';
+	if (joystick.left())
+	    press += ' left';
+	if (joystick.down())
+	    press += ' down';
+	
+	if(aPress()){
+	    press += ' a';
+	}
+	if(bPress()){
+	    press +=' b';
+	}
 
-        if(press){
-            webSocket.send(press);
-            console.log(press)
-        }
+	if(press != ''){
+	    webSocket.send(press);
+	    console.log(press)
+	}
     }, 1/30 * 1000);
     function aDown() {
         aPressed = true;
