@@ -1,9 +1,8 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 import socket
-import thread
 import websockets
 import asyncio
-from .event import Event
+from event import Event
 from snake import Snake
 from event import Event
 import time
@@ -20,46 +19,46 @@ class GameServer:
         self.server = None
 
     def start(self):
-        self.server  = websockets.serve(self.game, "128.0.0.1", self.s_port)
+        self.server  = websockets.serve(self.game, "127.0.0.1", self.s_port)
+        self.c.connect((self.c_host, self.c_port))
         asyncio.get_event_loop().run_until_complete(self.server)
         asyncio.get_event_loop().run_forever()
         self.s.close()
 
     async def game(self, websocket, path):
-        self.c.connect((self.c_host, self.c_port))
         async for message in websocket:
             await self.consumer(message)
 
     def consumer(self, msg):
-            if self.game is None:
-                print("cake")
-                if 'snake' in msg:
-                    print("whats")
-                    self.game = Snake(20, 25)
-                    print("sacalo   ")
-            else:
-                # fire all of the events
-                print("Hello my loved")
-                if ticks >= 5:
-                    self.eventwatcher += self.game.on_tick
-                    ticks = 0
-                if 'left' in msg:
-                    self.eventwatcher += self.game.on_left
-                elif 'right' in msg:
-                    self.eventwatcher += self.game.on_right
-                elif 'up' in msg:
-                    self.eventwatcher += self.game.on_up
-                elif 'down' in msg:
-                    self.eventwatcher += self.game.on_down
+        if self.game is None:
+            print("cake")
+            if 'snake' in msg:
+                print("whats")
+                self.game = Snake(20, 25)
+                print("sacalo   ")
+        else:
+            # fire all of the events
+            print("Hello my loved")
+            if ticks >= 5:
+                self.eventwatcher += self.game.on_tick
+                ticks = 0
+            if 'left' in msg:
+                self.eventwatcher += self.game.on_left
+            elif 'right' in msg:
+                self.eventwatcher += self.game.on_right
+            elif 'up' in msg:
+                self.eventwatcher += self.game.on_up
+            elif 'down' in msg:
+                self.eventwatcher += self.game.on_down
 
-                print("going to call the fire lol")
-                self.eventwatcher()
-                game_bytes = self.game.draw_board()
-                print(''.join(format(x, '02X') for x in game_bytes))
-                self.c.sendall(game_bytes)
-                self.eventwatcher.clear_handlers()
-            ticks +=1
-            time.sleep(0.1)
+            print("going to call the fire lol")
+            self.eventwatcher()
+            game_bytes = self.game.draw_board()
+            print(''.join(format(x, '02X') for x in game_bytes))
+            self.c.sendall(game_bytes)
+            self.eventwatcher.clear_handlers()
+        ticks +=1
+        time.sleep(0.1)
         print("game over")
         self.close_conn()
 

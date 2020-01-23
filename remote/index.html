@@ -19,8 +19,7 @@
 <script src="./virtualjoystick.js"></script>
 <script src="/socket.io/socket.io.js"></script>
 <script>
-    var socket = io();
-    let url = "ws://wall.ulimartech.com:3400/ws/";
+    let url = "ws://wall.ulimartech.com:3400/";
     let webSocket = new WebSocket(url);
     webSocket.onopen = function(event){
 	    service.send("snake");
