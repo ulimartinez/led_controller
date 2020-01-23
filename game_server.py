@@ -1,5 +1,7 @@
 import socket
 import thread
+import websockets
+import asyncio
 from .event import Event
 class GameServer:
     def __init__(self, server_host, server_port, client_host, client_port):
@@ -11,20 +13,21 @@ class GameServer:
         self.c = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.eventwatcher = Event()
         self.game = None
+        self.server = None
 
     def start(self):
-        self.s.bind((self.s_host, self.s_port))
-        self.c.connect((self.c_host, self.c_port))
-        self.s.listen(5)
-        while True:
-            c, addr = s.accept()
-            thread.start_new_thread(self.on_new_client, (c,addr))
+        self.server  = websockets.serve(self.game, "128.0.0.1", self.s_port)
+        asyncio.get_event_loop().run_until_complete(self.server)
+        asyncio.get_event_loop().run_forever()
         self.s.close()
 
-    def on_new_client(self, client_sock, addr):
-        while True:
-            msg = client_sock.recv(1024)
-            # do stuff with client messages
+    async def game(self, websocket, path):
+        self.c.connect((self.c_host, self.c_port))
+        async for message in websocket:
+            await self.consumer(message)
+
+    def consumer(self, msg):
+
             if self.game is None:
                 if 'snake' in msg:
                     self.game = Snake(20, 25)
@@ -44,7 +47,6 @@ class GameServer:
                 game_bytes = self.game.drawboard()
                 self.c.sendall(game_bytes)
                 self.eventwatcher.clear_handlers()
-
 
 def main():
     server = GameServer('localhost', 8081, 'localhost', 8080)
