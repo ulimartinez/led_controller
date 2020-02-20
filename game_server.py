@@ -5,6 +5,7 @@ import asyncio
 from event import Event
 from snake import Snake
 from event import Event
+import Lock, Thread from threading
 import time
 class GameServer:
     def __init__(self, server_host, server_port, client_host, client_port):
@@ -17,15 +18,16 @@ class GameServer:
         self.eventwatcher = Event()
         self.game = None
         self.server = None
+        self.lock = Lock()
 
     def start(self):
-        self.server  = websockets.serve(self.game, "127.0.0.1", self.s_port)
+        self.server  = websockets.serve(self.game_messages, "127.0.0.1", self.s_port)
         self.c.connect((self.c_host, self.c_port))
         asyncio.get_event_loop().run_until_complete(self.server)
         asyncio.get_event_loop().run_forever()
         self.s.close()
 
-    async def game(self, websocket, path):
+    async def game_messages(self, websocket, path):
         async for message in websocket:
             await self.consumer(message)
 
@@ -33,34 +35,38 @@ class GameServer:
         if self.game is None:
             print("cake")
             if 'snake' in msg:
-                print("whats")
                 self.game = Snake(20, 25)
-                print("sacalo   ")
+                self.run_thread()
         else:
             # fire all of the events
-            print("Hello my loved")
-            if ticks >= 5:
-                self.eventwatcher += self.game.on_tick
-                ticks = 0
-            if 'left' in msg:
-                self.eventwatcher += self.game.on_left
-            elif 'right' in msg:
-                self.eventwatcher += self.game.on_right
-            elif 'up' in msg:
-                self.eventwatcher += self.game.on_up
-            elif 'down' in msg:
-                self.eventwatcher += self.game.on_down
+            if len(msg) > 0:
+                with self.lock:
 
-            print("going to call the fire lol")
-            self.eventwatcher()
-            game_bytes = self.game.draw_board()
-            print(''.join(format(x, '02X') for x in game_bytes))
-            self.c.sendall(game_bytes)
-            self.eventwatcher.clear_handlers()
-        ticks +=1
-        time.sleep(0.1)
-        print("game over")
-        self.close_conn()
+                    if 'left' in msg:
+                        self.eventwatcher += self.game.on_left
+                    elif 'right' in msg:
+                        self.eventwatcher += self.game.on_right
+                    elif 'up' in msg:
+                        self.eventwatcher += self.game.on_up
+                    elif 'down' in msg:
+                        self.eventwatcher += self.game.on_down
+
+
+    def game_thread(self):
+        if self.game is not None:
+            with self.lock:
+                while self.game.playing:
+                    self.eventwatcher += self.game.on_tick
+                    self.eventwatcher()
+                    game_bytes = self.game.draw_board()
+                    self.c.sendall(game_bytes)
+                    self.eventwatcher.clear_handlers()
+                    time.sleep(1/2)
+            self.game = None
+
+    def run_thread(self):
+        game_thread = Thread(target = self.game_thread)
+        game_thread.start()
 
     def is_playing(self):
         if self.game is None:
@@ -68,8 +74,6 @@ class GameServer:
         else:
             return self.game.playing
 
-    def close_conn(self):
-        self.c.close()
 
 def main():
     server = GameServer('localhost', 3400, 'localhost', 8080)
