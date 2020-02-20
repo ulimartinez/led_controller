@@ -15,58 +15,56 @@ class GameServer:
         self.c_port = client_port
         self.c = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.eventwatcher = Event()
-        self.game = None
         self.server = None
+        self.game_playing = None
+        self.ticks = 0
 
     def start(self):
-        self.server  = websockets.serve(self.game, "127.0.0.1", self.s_port)
+        print("starting web socket on port "+str(self.s_port))
+        self.server  = websockets.serve(self.game, None, self.s_port)
+        print("started websocket")
         self.c.connect((self.c_host, self.c_port))
         asyncio.get_event_loop().run_until_complete(self.server)
         asyncio.get_event_loop().run_forever()
         self.s.close()
 
     async def game(self, websocket, path):
-        async for message in websocket:
-            await self.consumer(message)
+        while True:
+            message = await websocket.recv()
+            self.consumer(message)
+        #self.close_conn()
+            
 
     def consumer(self, msg):
-        if self.game is None:
-            print("cake")
+        if self.game_playing is None:
             if 'snake' in msg:
-                print("whats")
-                self.game = Snake(20, 25)
-                print("sacalo   ")
+                self.game_playing = Snake(20, 25)
         else:
             # fire all of the events
-            print("Hello my loved")
-            if ticks >= 5:
-                self.eventwatcher += self.game.on_tick
-                ticks = 0
+            if self.ticks >= 0:
+                self.eventwatcher += self.game_playing.on_tick
+                self.ticks = 0
             if 'left' in msg:
-                self.eventwatcher += self.game.on_left
+                self.eventwatcher += self.game_playing.on_left
             elif 'right' in msg:
-                self.eventwatcher += self.game.on_right
+                self.eventwatcher += self.game_playing.on_right
             elif 'up' in msg:
-                self.eventwatcher += self.game.on_up
+                self.eventwatcher += self.game_playing.on_up
             elif 'down' in msg:
-                self.eventwatcher += self.game.on_down
+                self.eventwatcher += self.game_playing.on_down
 
-            print("going to call the fire lol")
             self.eventwatcher()
-            game_bytes = self.game.draw_board()
-            print(''.join(format(x, '02X') for x in game_bytes))
+            game_bytes = self.game_playing.draw_board()
             self.c.sendall(game_bytes)
             self.eventwatcher.clear_handlers()
-        ticks +=1
+        self.ticks +=1
         time.sleep(0.1)
-        print("game over")
-        self.close_conn()
 
     def is_playing(self):
-        if self.game is None:
+        if self.game_playing is None:
             return True
         else:
-            return self.game.playing
+            return self.game_playing.playing
 
     def close_conn(self):
         self.c.close()

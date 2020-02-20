@@ -72,7 +72,6 @@ class Snake(Game):
 
 
     def on_tick(self):
-        print("on tick was called")
         self.clear_board()
         self.place_food()
         self.place_snake()
@@ -81,6 +80,7 @@ class Snake(Game):
 
     def on_left(self):
         self.dir = 'l'
+        print("left was added")
     def on_right(self):
         self.dir = 'r'
     def on_up(self):
@@ -90,11 +90,6 @@ class Snake(Game):
 
     def draw_board(self):
         board_state = [[color['white'] if x>0 else color['black'] for x in row] for row in self.board]
-        for row in self.board:
-            for val in row:
-
-                print(val),
-            print("\n")
         bytes_array = PixelUtils.board_to_bytes(board_state)
         return bytes_array
 
