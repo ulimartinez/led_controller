@@ -5,7 +5,7 @@ import asyncio
 from event import Event
 from snake import Snake
 from event import Event
-import Lock, Thread from threading
+from threading import Lock, Thread 
 import time
 class GameServer:
     def __init__(self, server_host, server_port, client_host, client_port):
@@ -21,13 +21,13 @@ class GameServer:
         self.lock = Lock()
 
     def start(self):
-        self.server  = websockets.serve(self.game_messages, "127.0.0.1", self.s_port)
+        self.server  = websockets.serve(self.game_messages, None, self.s_port)
         self.c.connect((self.c_host, self.c_port))
         asyncio.get_event_loop().run_until_complete(self.server)
         asyncio.get_event_loop().run_forever()
         self.s.close()
 
-    async def game(self, websocket, path):
+    async def game_messages(self, websocket, path):
         while True:
             message = await websocket.recv()
             self.consumer(message)
@@ -35,35 +35,35 @@ class GameServer:
             
 
     def consumer(self, msg):
-        if self.game_playing is None:
+        if self.game is None:
             if 'snake' in msg:
                 self.game = Snake(20, 25)
                 self.run_thread()
         else:
             # fire all of the events
             if len(msg) > 0:
-                with self.lock:
+                #with self.lock:
 
-                    if 'left' in msg:
-                        self.eventwatcher += self.game.on_left
-                    elif 'right' in msg:
-                        self.eventwatcher += self.game.on_right
-                    elif 'up' in msg:
-                        self.eventwatcher += self.game.on_up
-                    elif 'down' in msg:
-                        self.eventwatcher += self.game.on_down
+                if 'left' in msg:
+                    self.eventwatcher += self.game.on_left
+                elif 'right' in msg:
+                    self.eventwatcher += self.game.on_right
+                elif 'up' in msg:
+                    self.eventwatcher += self.game.on_up
+                elif 'down' in msg:
+                    self.eventwatcher += self.game.on_down
 
 
     def game_thread(self):
         if self.game is not None:
-            with self.lock:
-                while self.game.playing:
-                    self.eventwatcher += self.game.on_tick
-                    self.eventwatcher()
-                    game_bytes = self.game.draw_board()
-                    self.c.sendall(game_bytes)
-                    self.eventwatcher.clear_handlers()
-                    time.sleep(1/2)
+            #with self.lock:
+            while self.game.playing:
+                self.eventwatcher += self.game.on_tick
+                self.eventwatcher()
+                game_bytes = self.game.draw_board()
+                self.c.sendall(game_bytes)
+                self.eventwatcher.clear_handlers()
+                time.sleep(1/5)
             self.game = None
 
     def run_thread(self):
@@ -71,10 +71,10 @@ class GameServer:
         game_thread.start()
 
     def is_playing(self):
-        if self.game_playing is None:
+        if self.game is None:
             return True
         else:
-            return self.game_playing.playing
+            return self.game.playing
 
 
 def main():

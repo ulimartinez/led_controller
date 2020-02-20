@@ -14,9 +14,7 @@ class Snake(Game):
         self.place_food()
         
     def isValid(self, tup):
-        return True
         x, y = tup
-        print(x, y)
         return self.board[y][x] == 0
 
     def generate_food(self):
@@ -62,6 +60,9 @@ class Snake(Game):
                 return
             next_y = head_y+1
 
+        if self.board[next_y][next_x] not in (0, 3):
+            self.playing = False
+            return
         self.snake.append((next_x, next_y))
 
         if self.board[next_y][next_x] != 3:
@@ -79,14 +80,17 @@ class Snake(Game):
 
 
     def on_left(self):
-        self.dir = 'l'
-        print("left was added")
+        if self.dir != 'r':
+            self.dir = 'l'
     def on_right(self):
-        self.dir = 'r'
+        if self.dir != 'l':
+            self.dir = 'r'
     def on_up(self):
-        self.dir = 'u'
+        if self.dir != 'd':
+            self.dir = 'u'
     def on_down(self):
-        self.dir = 'd'
+        if self.dir != 'u':
+            self.dir = 'd'
 
     def draw_board(self):
         board_state = [[color['white'] if x>0 else color['black'] for x in row] for row in self.board]
