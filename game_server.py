@@ -16,8 +16,8 @@ class GameServer:
         self.c_port = client_port
         self.c = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.eventwatcher = Event()
-        self.game = None
         self.server = None
+        self.game = None
         self.lock = Lock()
 
     def start(self):
@@ -27,13 +27,15 @@ class GameServer:
         asyncio.get_event_loop().run_forever()
         self.s.close()
 
-    async def game_messages(self, websocket, path):
-        async for message in websocket:
-            await self.consumer(message)
+    async def game(self, websocket, path):
+        while True:
+            message = await websocket.recv()
+            self.consumer(message)
+        #self.close_conn()
+            
 
     def consumer(self, msg):
-        if self.game is None:
-            print("cake")
+        if self.game_playing is None:
             if 'snake' in msg:
                 self.game = Snake(20, 25)
                 self.run_thread()
@@ -69,10 +71,10 @@ class GameServer:
         game_thread.start()
 
     def is_playing(self):
-        if self.game is None:
+        if self.game_playing is None:
             return True
         else:
-            return self.game.playing
+            return self.game_playing.playing
 
 
 def main():
