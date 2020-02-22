@@ -1,10 +1,12 @@
 color = dict([
-        ('red', 'ff000000'),
+        ('red', '00ff0000'),
         ('white','ffffff00'),
         ('black', '00000000'),
-        ('cobalt_blue', '0341ae00'),
-        ('apple_green', '72cb3b00'),
-        ('cyber_yellow', 'ffd50000'),
-        ('beer', 'ff971c00'),
-        ('red2', 'ff321300')
+        ('cobalt_blue', '0101e900'),
+        ('apple_green', 'cb723b00'),
+        ('cyber_yellow', 'd5ff0000'),
+        ('beer', 'a3f50000'),
+        ('red2', '32ff1300'),
+        ('purple', '039ff200'),
+        ('cyan', 'de04db00')
         ])

@@ -4,6 +4,7 @@ import websockets
 import asyncio
 from event import Event
 from snake import Snake
+from tetris import Tetris
 from event import Event
 from threading import Lock, Thread 
 import time
@@ -39,6 +40,9 @@ class GameServer:
             if 'snake' in msg:
                 self.game = Snake(20, 25)
                 self.run_thread()
+            if 'tetris' in msg:
+                self.game = Tetris(20,25)
+                self.run_thread()
         else:
             # fire all of the events
             if len(msg) > 0:
@@ -52,6 +56,10 @@ class GameServer:
                     self.eventwatcher += self.game.on_up
                 elif 'down' in msg:
                     self.eventwatcher += self.game.on_down
+                elif 'abutton' in msg:
+                    self.eventwatcher += self.game.on_a
+                elif 'bbutton' in msg:
+                    self.eventwatcher += self.game.on_b
 
 
     def game_thread(self):
@@ -63,7 +71,7 @@ class GameServer:
                 game_bytes = self.game.draw_board()
                 self.c.sendall(game_bytes)
                 self.eventwatcher.clear_handlers()
-                time.sleep(1/5)
+                time.sleep(1/30)
             self.game = None
 
     def run_thread(self):

@@ -6,3 +6,21 @@ class Game(object):
 
     def clear_board(self):
         self.board = [[0 for x in range(self.w)] for y in range(self.h)]
+
+    def on_left(self):
+        pass
+
+    def on_right(self):
+        pass
+
+    def on_down(self):
+        pass
+
+    def on_up(self):
+        pass
+
+    def on_a(self):
+        pass
+
+    def on_b(self):
+        pass

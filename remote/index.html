@@ -12,8 +12,8 @@
 </div>
 <div id="bottom">
     <div id="buttons">
-        <span id="button-a" class='video-game-button' ontouchstart="aDown()" ontouchend="aUp()" onmousedown="aDown()" onmouseup="aUp()">A</span>
-        <span id="button-b" class='video-game-button' ontouchstart="bDown()" ontouchend="bUp()" onmousedown="bDown()" onmouseup="bUp()">B</span>
+	<a href="#"><span id="button-a" class='video-game-button' ontouchstart="aDown()" ontouchend="aUp()" onmousedown="aDown()" onmouseup="aUp()">A</span></a>
+	<a href="#"><span id="button-b" class='video-game-button' ontouchstart="bDown()" ontouchend="bUp()" onmousedown="bDown()" onmouseup="bUp()">B</span></a>
     </div>
 </div>
 <script src="virtualjoystick.js"></script>
@@ -21,7 +21,7 @@
     let url = "ws://wall.ulimartech.com:3400/";
     let webSocket = new WebSocket(url);
     webSocket.onopen = function(event){
-	    webSocket.send("snake");
+	    webSocket.send("tetris");
     }
     webSocket.onerror = function(event){
 	    alert("error");
@@ -57,10 +57,10 @@
 	    press += ' down';
 	
 	if(aPress()){
-	    press += ' a';
+	    //press += ' abutton';
 	}
 	if(bPress()){
-	    press +=' b';
+	    //press +=' bbutton';
 	}
 
 	if(press != ''){
@@ -73,12 +73,14 @@
     }
     function aUp() {
         aPressed = false;
+	webSocket.send('abutton');
     }
     function bDown() {
         aPressed = true;
     }
     function bUp() {
         aPressed = false;
+	webSocket.send('bbutton');
     }
     function aPress() {
 
