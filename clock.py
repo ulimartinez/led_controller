@@ -1,24 +1,38 @@
 from PIL import Image, ImageDraw, ImageFont
 from datetime import datetime
 import math
+import requests
 class Clock:
     def __init__(self):
         self.now = datetime.now()
+        self.background = [255, 0, 0]
+        self.time_color = [0,255,0]
+        self.edge_color = [0,0,255]
 
     def getImage(self):
         self.now = datetime.now()
         hour = self.now.strftime('%H')
         minu = self.now.strftime('%M')
         sec = self.now.strftime('%S')
-        img = Image.new('RGB', (20, 25), color = 'red')
+        color = 'rgb('+','.join(self.background)+')'
+        img = Image.new('RGB', (20, 25), color = color)
         draw = ImageDraw.Draw(img)
         font = ImageFont.truetype('/home/ulimartinez/.fonts/Roboto-Bold.ttf', size = 12)
-        color = 'rgb(0, 255, 0)'
+        color = 'rgb(' + ','.join(self.time_color) + ')'
         draw.text((3, 1), hour, fill=color, font=font)
         draw.text((3, 12), minu, fill=color, font=font)
         self.seconds_to_frame(int(sec), draw)
         return img
 
+
+    def generate_colors(self, rgb):
+        url = 'http://colormind.io/api/'
+        params = {'input': '['+rgb+', "N", "N", "N", "N"]', 'model':'"default"'}
+        r = requests.post(url = url, data = params)
+        data = r.json()['result']
+        self.background = data[0]
+        self.time_color = data[-1]
+        self.edge_color = data[2]
 
     def seconds_to_frame(self, seconds, draw):
         start_x = 10
