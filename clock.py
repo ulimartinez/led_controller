@@ -14,11 +14,11 @@ class Clock:
         hour = self.now.strftime('%H')
         minu = self.now.strftime('%M')
         sec = self.now.strftime('%S')
-        color = 'rgb('+','.join(self.background)+')'
+        color = 'rgb('+','.join(str(v) for v in self.background)+')'
         img = Image.new('RGB', (20, 25), color = color)
         draw = ImageDraw.Draw(img)
         font = ImageFont.truetype('/home/ulimartinez/.fonts/Roboto-Bold.ttf', size = 12)
-        color = 'rgb(' + ','.join(self.time_color) + ')'
+        color = 'rgb(' + ','.join(str(v) for v in self.time_color) + ')'
         draw.text((3, 1), hour, fill=color, font=font)
         draw.text((3, 12), minu, fill=color, font=font)
         self.seconds_to_frame(int(sec), draw)

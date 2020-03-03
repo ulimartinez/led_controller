@@ -12,6 +12,7 @@ class Snake(Game):
         self.food = self.generate_food()
         self.place_snake()
         self.place_food()
+        self.ticks = -1
         
     def isValid(self, tup):
         x, y = tup
@@ -73,10 +74,13 @@ class Snake(Game):
 
 
     def on_tick(self):
-        self.clear_board()
-        self.place_food()
-        self.place_snake()
-        self.move_snake()
+        self.ticks += 1
+        speed= 15
+        if self.ticks % speed == 0:
+            self.clear_board()
+            self.place_food()
+            self.place_snake()
+            self.move_snake()
 
 
     def on_left(self):

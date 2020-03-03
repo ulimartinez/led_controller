@@ -91,6 +91,7 @@ class Tetris(Game):
        self.minos = [Omino, Jmino, Imino, Lmino, Smino, Zmino, Tmino]
        self.placed = np.zeros((24, 10), dtype=int).tolist()
        self.tetrimino = None
+       self.next_tetrimino = self.minos[random.randint(0,len(self.minos)-1)]
        self.tetrimino_position = (4, 0)
        self.r = 0
        self.ticks = 0
@@ -98,7 +99,8 @@ class Tetris(Game):
        self.playing = True
 
     def spawn(self):
-        self.tetrimino = self.minos[random.randint(0,len(self.minos)-1)]
+        self.tetrimino = self.next_tetrimino
+        self.next_tetrimino = self.minos[random.randint(0,len(self.minos)-1)]
         self.tetrimino_position = (4, 3)
         self.r = 0
 
@@ -248,6 +250,12 @@ class Tetris(Game):
                 for x in range(len(piece[0])):
                     if piece[y][x] != 0:
                         self.board[t_y + y][t_x + x] = piece[y][x]
+
+        piece = self.next_tetrimino[0]
+
+        for y in range(len(piece)):
+            for x in range(len(piece[0])):
+                self.board[10+y][11+x] = piece[y][x]
 
         board_state = [[color['black'] if val == 0 else
                         color['cyber_yellow'] if val == 1 else

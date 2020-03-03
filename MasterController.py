@@ -39,7 +39,7 @@ class MasterController:
         
        
 def main():
-    mqttcli = MqttCli('mqtt.gbridge.io', 8883)
+    mqttcli = MqttCli('web.ulimartech.com', 1883)
     clock = Clock()
     master = MasterController(clock, mqttcli, 'localhost', 8080)
     master.run()
