@@ -25,9 +25,11 @@ class Clock:
         return img
 
 
-    def generate_colors(self, rgb):
+    def set_color(self, rgb):
         url = 'http://colormind.io/api/'
-        params = {'input': '['+rgb+', "N", "N", "N", "N"]', 'model':'"default"'}
+        params = {'input': '[['+int(rgb[:2], 16)+
+                                int(rgb[2:4], 16)+
+                                int(rgb[4:6], 16)+'], "N", "N", "N", "N"]', 'model':'"default"'}
         r = requests.post(url = url, data = params)
         data = r.json()['result']
         self.background = data[0]
