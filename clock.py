@@ -2,6 +2,11 @@ from PIL import Image, ImageDraw, ImageFont
 from datetime import datetime
 import math
 import requests
+import logging
+import http.client
+
+http.client.HTTPConnection.debuglevel = 1
+
 class Clock:
     def __init__(self):
         self.now = datetime.now()
@@ -26,12 +31,21 @@ class Clock:
 
 
     def set_color(self, rgb):
+        logging.basicConfig()
+        logging.getLogger().setLevel(logging.DEBUG)
+        requests_log = logging.getLogger("requests.packages.urllib3")
+        requests_log.setLevel(logging.DEBUG)
+        requests_log.propagate = True
         url = 'http://colormind.io/api/'
-        params = {'input': '[['+int(rgb[:2], 16)+
-                                int(rgb[2:4], 16)+
-                                int(rgb[4:6], 16)+'], "N", "N", "N", "N"]', 'model':'"default"'}
-        r = requests.post(url = url, data = params)
-        data = r.json()['result']
+        params = {'input': [[int(rgb[:2], 16),
+                                int(rgb[2:4], 16),
+                                int(rgb[4:6], 16)], "N", "N", "N", "N"], 
+                'model':'default'}
+        print(params)
+        r = requests.post(url = url, json = params)
+        d = r.json()
+        print(d)
+        data = d['result']
         self.background = data[0]
         self.time_color = data[-1]
         self.edge_color = data[2]

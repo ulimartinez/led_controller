@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 from mqttcli import MqttCli
 from clock import Clock
 from pixelutils import PixelUtils
@@ -18,13 +18,21 @@ class MasterController:
         self.s.connect((self.host, self.port))
         img = None
         while True:
-            img = self.mqtt.get_image()
-            self.s.sendall(PixelUtils.image_to_bytearray(img))
+            if self.mqtt.needs_draw():
+                img = self.mqtt.get_image()
+                print("got image")
+                self.s.sendall(PixelUtils.image_to_bytearray(img))
+            else:
+                img = self.mqtt.get_image()
+                self.s.sendall(PixelUtils.image_to_bytearray(img))
+                sleep(10)
             sleep(0.5)
         
        
 def main():
+    print("creating mqtt")
     mqttcli = MqttCli('web.ulimartech.com', 1883)
+    print("mqtt created")
     master = MasterController(mqttcli, 'localhost', 8080)
     master.run()
 

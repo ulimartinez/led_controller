@@ -23,7 +23,8 @@ class MqttCli:
         self.client.loop_start()
 
     def on_connect(self, client, userdata, flags, rc):
-        topics = ["wall/rgb1/#", "clock/rgb1/#"]
+        print("connected")
+        topics = [("wall/rgb1/#", 0), ("clock/rgb1/#", 0)]
         self.client.subscribe(topics)
         self.client.message_callback_add('wall/rgb1/rgb/set', self.on_message_wall_set)
         self.client.message_callback_add('clock/rgb1/rgb/set', self.on_message_clock_set)
@@ -33,51 +34,46 @@ class MqttCli:
         last = parts[-1]
         first = parts[0]
         if last == "switch":
-            if msg.payload == "OFF":
+            msg1 = "OFF"
+            msg2 = "OFF"
+            print(msg.payload)
+
+            if msg.payload.decode() == "OFF":
                 self.needs_wall = False
                 self.needs_clock = False
-                msgs = [
-                        {"topic": "wall/rgb1/light/status", "payload": "OFF"},
-                        {"topic": "clock/rgb1/light/status", "payload":"OFF"}
-                        ]
-                
+                msg1 = "OFF"
+                msg2 = "OFF"
             elif first == "wall":
                 self.needs_wall = True
-                msgs = [
-                        {"topic": "wall/rgb1/light/status", "payload": "ON"},
-                        {"topic": "clock/rgb1/light/status", "payload":"OFF"}
-                        ]
+                msg1 = "ON"
+                msg2 = "OFF"
             elif first == "clock":
                 self.needs_clock = True
-                msgs = [
-                        {"topic": "wall/rgb1/light/status", "payload": "OFF"},
-                        {"topic": "clock/rgb1/light/status", "payload":"ON"}
-                        ]
-            self.client.multiple(msg)
+                msg1 = "OFF"
+                msg2 = "ON"
+            self.client.publish("wall/rgb1/light/status", msg1)
+            self.client.publish("clock/rgb1/light/status", msg2)
 
     def on_message_wall_set(self, client, userdata, msg):
         self.light.set_color(self.str2hex(msg.payload))
         self.needs_wall = True
         self.needs_clock = False
-        msgs = [
-                {"topic": "wall/rgb1/light/status", "payload": "ON"},
-                {"topic": "clock/rgb1/light/status", "payload":"OFF"}
-                ]
-        self.client.multiple(msg)
+        self.client.publish("wall/rgb1/light/status", "ON")
+        self.client.publish("clock/rgb1/light/status", "OFF")
 
     def on_message_clock_set(self, client, userdata, msg):
         self.clock.set_color(self.str2hex(msg.payload))
         self.needs_wall = False
         self.needs_clock = True 
-        msgs = [
-                {"topic": "wall/rgb1/light/status", "payload": "OFF"},
-                {"topic": "clock/rgb1/light/status", "payload":"ON"}
-                ]
-        self.client.multiple(msg)
+        self.client.publish("wall/rgb1/light/status", "OFF")
+        self.client.publish("clock/rgb1/light/status", "ON")
 
 
     def dissconnect(self):
         self.client.loop_stop()
+
+    def needs_draw(self):
+        return self.needs_wall or self.needs_clock
 
     def get_image(self):
         if self.needs_clock:
@@ -89,6 +85,6 @@ class MqttCli:
 
 
     def str2hex(self, strng):
-        colors = strng.split(",")
+        colors = strng.decode().split(",")
         str = "%2x%2x%2x00" % (int(colors[0]), int(colors[1]), int(colors[2]))
         return str.replace(' ', '0')

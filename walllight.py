@@ -2,7 +2,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 class WallLight:
     def __init__(self):
-        self.color = None
+        self.color = "ff000000"
 
     def set_color(self, color):
         self.color = color
