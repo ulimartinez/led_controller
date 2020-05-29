@@ -6,4 +6,5 @@ build
 venv
 *.pyc
 remote/node_modules
+node_modules
 

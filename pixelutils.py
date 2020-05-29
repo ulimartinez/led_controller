@@ -48,3 +48,9 @@ class PixelUtils:
                         byt += bytearray.fromhex(pixelstr)
         return byt
 
+    @staticmethod
+    def empty_bytes(width, height):
+        byt = bytearray.fromhex('00000000')
+        for x in range(width*height-1):
+            byt += bytearray.fromhex('00000000')
+        return byt
