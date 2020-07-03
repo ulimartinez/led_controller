@@ -35,6 +35,9 @@ class Text:
         return bytes_array 
 
     def on_tick(self):
+        self.moveText()
+
+    def on_tick2(self):
         speed =1 
         if self.ticks > 100:
             self.ticks = 0
